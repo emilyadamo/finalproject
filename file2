@@ -1,0 +1,86 @@
+import requests
+import sqlite3
+
+
+
+
+def fetch_weather_data(api_key, city_name):
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Failed to fetch data from OpenWeatherMap API")
+        return None
+    
+    
+def create_database_and_insert_weather(api_key, city_name):
+    # Fetch weather data from the API
+    weather_data = fetch_weather_data(api_key, city_name)
+    if not weather_data:
+        return
+    
+    # Connect to SQLite database
+    conn = sqlite3.connect('weather_data.db')
+    c = conn.cursor()
+
+    # Create table if it doesn't exist
+    c.execute('''CREATE TABLE IF NOT EXISTS weather (
+                 city TEXT,
+                 temperature REAL,
+                 humidity INTEGER,
+                 wind_speed REAL
+                 )''')
+
+    # Insert data into the table
+    c.execute('''INSERT INTO weather (city, temperature, humidity, wind_speed)
+                 VALUES (?, ?, ?, ?)''', (city_name,
+                                           weather_data['main']['temp'],
+                                           weather_data['main']['humidity'],
+                                           weather_data['wind']['speed']))
+
+    conn.commit()
+    conn.close()
+    print("Weather data inserted successfully.")
+    
+## function to print database info
+
+def print_weather_data():
+    # Connect to SQLite database
+    conn = sqlite3.connect('weather_data.db')
+    c = conn.cursor()
+
+    # Query the data
+    c.execute("SELECT * FROM weather")
+    rows = c.fetchall()
+
+    # Print the data
+    for row in rows:
+        print("City:", row[0])
+        print("Temperature:", row[1], "°C")
+        print("Humidity:", row[2], "%")
+        print("Wind Speed:", row[3], "m/s")
+        print("----------------------")
+
+    conn.close()
+
+def main():
+    api_key = 'bfc9dd88f5347d803ecfdd0a93698186'
+    max_lines = 20
+    lines_fetched = 0
+    while lines_fetched < max_lines:
+        data = fetch_weather_data(api_key, 'Chicago')
+        if data:
+            create_database_and_insert_weather(api_key, 'Chicago')
+            lines_fetched += 1
+        else:
+            break
+        
+    print_weather_data()
+    
+if __name__ == "__main__":
+    main()
+    
+            
+
+    
