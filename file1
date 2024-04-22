@@ -1,2 +1,97 @@
 ## FINAL PROJECT
 ## Emily Adamo, Andrea Gonzalvo, Rose Saperston
+
+import requests
+import sqlite3
+
+# Function to fetch air quality data from API
+def fetch_data_from_api(api_key):
+    url = "https://api.waqi.info/feed/here/?token=" + api_key
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Failed to fetch data from API")
+        return None
+
+# Function to create SQLite database and insert data
+def create_database_and_insert_data(data):
+    conn = sqlite3.connect('air_quality.db')
+    c = conn.cursor()
+
+    # Check if the data fetched from API is different
+    c.execute("SELECT * FROM air_quality_data ORDER BY id DESC LIMIT 1")
+    last_row = c.fetchone()
+    
+    if last_row is not None and (
+        last_row[1] == data['data']['city']['name'] and 
+        last_row[2] == data['data']['aqi'] and 
+        last_row[3] == data['data']['dominentpol']
+    ):
+        print("Data already exists in the database. Not inserting duplicates.")
+    else:
+        # Insert data into the table
+        c.execute('''INSERT INTO air_quality_data (city, aqi, dominant_pollutant) 
+                     VALUES (?, ?, ?)''', (data['data']['city']['name'], data['data']['aqi'], data['data']['dominentpol']))
+
+        conn.commit()
+        print("Data inserted successfully.")
+
+    conn.close()
+
+# Function to print database information
+def query_database():
+    conn = sqlite3.connect('air_quality.db')
+    c = conn.cursor()
+
+    # Query the data
+    c.execute("SELECT * FROM air_quality_data")
+    rows = c.fetchall()
+
+    # Print the data
+    for row in rows:
+        print(row)
+
+    conn.close()
+
+# Function to clear the database completely and recreate the table
+def clear_database():
+    conn = sqlite3.connect('air_quality.db')
+    c = conn.cursor()
+
+    # Drop the table if it exists
+    c.execute("DROP TABLE IF EXISTS air_quality_data")
+
+    # Recreate the table
+    c.execute('''CREATE TABLE air_quality_data (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 city TEXT,
+                 aqi INTEGER,
+                 dominant_pollutant TEXT
+                 )''')
+
+    conn.commit()
+    conn.close()
+
+# Main function
+def main():
+    # Clear the database before fetching new data
+    clear_database()
+
+    api_key = '4d10eff89e4c42d51e89711f979e6371524a5a3b'  # Your API key here
+    max_lines = 100  # Define the maximum number of lines to fetch
+    lines_fetched = 0  # Initialize the counter for lines fetched
+    while lines_fetched < max_lines:  # Continue fetching until max_lines are fetched
+        data = fetch_data_from_api(api_key)
+        if data:
+            create_database_and_insert_data(data)
+            lines_fetched += 1  # Increment the counter for lines fetched
+        else:
+            break  # Exit the loop if failed to fetch data
+
+if __name__ == "__main__":
+    main()
+
+
+
+
