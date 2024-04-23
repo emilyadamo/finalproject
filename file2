@@ -1,8 +1,22 @@
+
+#OPENWEATHERMAP API
+
 import requests
 import sqlite3
 
-
-
+# Predefined list of 100 popular cities in the United States
+cities_list = [
+    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose',
+    'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco', 'Indianapolis', 'Seattle', 'Denver', 'Washington',
+    'Boston', 'El Paso', 'Nashville', 'Detroit', 'Oklahoma City', 'Portland', 'Las Vegas', 'Memphis', 'Louisville', 'Baltimore',
+    'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento', 'Mesa', 'Kansas City', 'Atlanta', 'Long Beach', 'Colorado Springs',
+    'Raleigh', 'Miami', 'Virginia Beach', 'Omaha', 'Oakland', 'Minneapolis', 'Tulsa', 'Arlington', 'New Orleans', 'Wichita',
+    'Cleveland', 'Tampa', 'Bakersfield', 'Aurora', 'Anaheim', 'Honolulu', 'Santa Ana', 'Corpus Christi', 'Riverside', 'Lexington',
+    'St. Louis', 'Stockton', 'Pittsburgh', 'Anchorage', 'Cincinnati', 'Saint Paul', 'Greensboro', 'Toledo', 'Newark', 'Plano',
+    'Henderson', 'Lincoln', 'Orlando', 'Jersey City', 'Chula Vista', 'Buffalo', 'Fort Wayne', 'Chandler', 'St. Petersburg', 'Laredo',
+    'Durham', 'Irvine', 'Madison', 'Norfolk', 'Lubbock', 'Gilbert', 'Winston-Salem', 'Glendale', 'Reno', 'Hialeah', 'Garland',
+    'Chesapeake', 'Irving', 'North Las Vegas', 'Scottsdale', 'Baton Rouge', 'Fremont', 'Richmond', 'Boise', 'San Bernardino'
+]
 
 def fetch_weather_data(api_key, city_name):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}"
@@ -10,10 +24,9 @@ def fetch_weather_data(api_key, city_name):
     if response.status_code == 200:
         return response.json()
     else:
-        print("Failed to fetch data from OpenWeatherMap API")
+        print(f"Failed to fetch data for {city_name} from OpenWeatherMap API")
         return None
-    
-    
+
 def create_database_and_insert_weather(api_key, city_name):
     # Fetch weather data from the API
     weather_data = fetch_weather_data(api_key, city_name)
@@ -41,10 +54,9 @@ def create_database_and_insert_weather(api_key, city_name):
 
     conn.commit()
     conn.close()
-    print("Weather data inserted successfully.")
-    
-## function to print database info
+    print(f"Weather data for {city_name} inserted successfully.")
 
+## Function to print database information
 def print_weather_data():
     # Connect to SQLite database
     conn = sqlite3.connect('weather_data.db')
@@ -66,20 +78,23 @@ def print_weather_data():
 
 def main():
     api_key = 'bfc9dd88f5347d803ecfdd0a93698186'
-    max_lines = 20
+    max_lines = len(cities_list)  # Number of cities in the list
     lines_fetched = 0
-    while lines_fetched < max_lines:
-        data = fetch_weather_data(api_key, 'Chicago')
+    for city_name in cities_list:
+        data = fetch_weather_data(api_key, city_name)
         if data:
-            create_database_and_insert_weather(api_key, 'Chicago')
+            create_database_and_insert_weather(api_key, city_name)
             lines_fetched += 1
-        else:
+        if lines_fetched >= max_lines:
             break
         
     print_weather_data()
     
 if __name__ == "__main__":
     main()
+
+
+
     
             
 
