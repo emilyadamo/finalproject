@@ -1,0 +1,96 @@
+## WEATHER API BY NINJAS
+
+import requests
+import sqlite3
+
+# Function to fetch weather data from API
+def fetch_weather_data(city):
+    url = "https://weather-by-api-ninjas.p.rapidapi.com/v1/weather"
+
+    querystring = {"city": city}
+
+    headers = {
+        "X-RapidAPI-Key": "d9d39040ccmsh82e2baeeefb6346p171fcfjsn406704b68925",
+        "X-RapidAPI-Host": "weather-by-api-ninjas.p.rapidapi.com"
+    }
+
+    response = requests.get(url, headers=headers, params=querystring)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Failed to fetch data for {city}")
+        return None
+
+# Function to create SQLite database and insert data
+def create_database_and_insert_data(cities):
+    conn = sqlite3.connect('weather_data.db')
+    c = conn.cursor()
+
+    # Drop the existing table if it exists
+    c.execute('''DROP TABLE IF EXISTS weather_data''')
+
+    # Create table with the correct schema
+    c.execute('''CREATE TABLE weather_data (
+                 city TEXT,
+                 temperature INTEGER,
+                 feels_like INTEGER,
+                 humidity INTEGER,
+                 wind_speed REAL
+                 )''')
+
+    # Insert data into the table for each city
+    for city in cities:
+        data = fetch_weather_data(city)
+        if data:
+            temperature = data.get("temp")
+            feels_like = data.get("feels_like")
+            humidity = data.get("humidity")
+            wind_speed = data.get("wind_speed")
+            c.execute('''INSERT INTO weather_data (city, temperature, feels_like, humidity, wind_speed)
+                         VALUES (?, ?, ?, ?, ?)''', (city, temperature, feels_like, humidity, wind_speed))
+            print(f"Data for {city} inserted successfully")
+        else:
+            print(f"No data available for {city}")
+
+    conn.commit()
+    conn.close()
+
+# Function to print database information
+def print_weather_data():
+    conn = sqlite3.connect('weather_data.db')
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM weather_data")
+    rows = c.fetchall()
+
+    for row in rows:
+        print(row)
+
+    conn.close()
+
+def main():
+    cities_list = [
+        'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose',
+        'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco', 'Indianapolis', 'Seattle', 'Denver', 'Washington',
+        'Boston', 'El Paso', 'Nashville', 'Detroit', 'Oklahoma City', 'Portland', 'Las Vegas', 'Memphis', 'Louisville', 'Baltimore',
+        'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento', 'Mesa', 'Kansas City', 'Atlanta', 'Long Beach', 'Colorado Springs',
+        'Raleigh', 'Miami', 'Virginia Beach', 'Omaha', 'Oakland', 'Minneapolis', 'Tulsa', 'Arlington', 'New Orleans', 'Wichita',
+        'Cleveland', 'Tampa', 'Bakersfield', 'Aurora', 'Anaheim', 'Honolulu', 'Santa Ana', 'Corpus Christi', 'Riverside', 'Lexington',
+        'St. Louis', 'Stockton', 'Pittsburgh', 'Anchorage', 'Cincinnati', 'Saint Paul', 'Greensboro', 'Toledo', 'Newark', 'Plano',
+        'Henderson', 'Lincoln', 'Orlando', 'Jersey City', 'Chula Vista', 'Buffalo', 'Fort Wayne', 'Chandler', 'St. Petersburg', 'Laredo',
+        'Durham', 'Irvine', 'Madison', 'Norfolk', 'Lubbock', 'Gilbert', 'Winston-Salem', 'Glendale', 'Reno', 'Hialeah', 'Garland',
+        'Chesapeake', 'Irving', 'North Las Vegas', 'Scottsdale', 'Baton Rouge', 'Fremont', 'Richmond', 'Boise', 'San Bernardino'
+    ]
+
+    create_database_and_insert_data(cities_list)
+    print_weather_data()
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+
