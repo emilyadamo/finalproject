@@ -119,20 +119,20 @@ def print_weather_data():
 
 def main():
     api_key = 'bfc9dd88f5347d803ecfdd0a93698186'
-    max_lines = len(cities_list)  # Number of cities in the list
-    lines_fetched = 0
-    for city_name in cities_list:
-        data = fetch_weather_data(api_key, city_name)
-        if data:
-            create_database_and_insert_weather(api_key, city_name)
-            lines_fetched += 1
-        if lines_fetched >= max_lines:
-            break
-        
-    print_weather_data()
-    
+    total_items_inserted = 0  # Initialize the counter for total items inserted
+    while total_items_inserted < 25:
+        for city_name in cities_list:
+            data = fetch_weather_data(api_key, city_name)
+            if data:
+                create_database_and_insert_weather(api_key, city_name)
+                total_items_inserted += 1  # Increment the counter for total items inserted
+                if total_items_inserted >= 100:
+                    print("100 items fetched. Exiting program.")
+                    return
+
 if __name__ == "__main__":
     main()
+
 
 
 
