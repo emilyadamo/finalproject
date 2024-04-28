@@ -2,6 +2,7 @@
 
 import requests
 import sqlite3
+import matplotlib.pyplot as plt
 
 # Function to fetch weather data from API
 def fetch_weather_data(city):
@@ -55,7 +56,6 @@ def create_database_and_insert_data(cities):
     conn.commit()
     conn.close()
 
-# Function to print database information
 def print_weather_data():
     conn = sqlite3.connect('weather_data.db')
     c = conn.cursor()
@@ -67,6 +67,35 @@ def print_weather_data():
         print(row)
 
     conn.close()
+    
+def print_and_visualize_weather_data():
+    conn = sqlite3.connect('weather_data.db')
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM weather_data")
+    rows = c.fetchall()
+
+    cities = []
+    temperatures = []
+
+    for row in rows:
+        cities.append(row[0])
+        temperatures.append(row[1])
+
+    conn.close()
+
+    plt.figure(figsize=(12, 11))
+    plt.barh(cities, temperatures, color='skyblue')
+    plt.xlabel('Temperature (°C)')
+    plt.ylabel('City')
+    plt.title('Temperature of Cities')
+    plt.gca().invert_yaxis()  
+    
+    # Increase spacing between city names on the y-axis
+    plt.yticks(fontsize=4)
+    plt.tight_layout()
+    plt.show()
+
 
 def main():
     cities_list = [
@@ -82,8 +111,12 @@ def main():
         'Chesapeake', 'Irving', 'North Las Vegas', 'Scottsdale', 'Baton Rouge', 'Fremont', 'Richmond', 'Boise', 'San Bernardino'
     ]
 
-    create_database_and_insert_data(cities_list)
-    print_weather_data()
+    # create_database_and_insert_data(cities_list)
+    # print_weather_data()
+
+    #create_database_and_insert_data(cities_list)
+    #print_weather_data()
+    print_and_visualize_weather_data()
 
 if __name__ == "__main__":
     main()

@@ -14,10 +14,10 @@ cities_list = [
     'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento', 'Mesa', 'Kansas City', 'Atlanta', 'Long Beach', 'Colorado Springs',
     'Raleigh', 'Miami', 'Omaha', 'Oakland', 'Minneapolis', 'Tulsa', 'Arlington', 'New Orleans', 'Wichita',
     'Cleveland', 'Tampa', 'Bakersfield', 'Aurora', 'Anaheim', 'Honolulu', 'Santa Ana', 'Corpus Christi', 'Riverside', 'Lexington',
-    'St. Louis', 'Stockton', 'Pittsburgh', 'Anchorage', 'Cincinnati', 'Saint Paul', 'Greensboro', 'Toledo', 'Newark', 'Plano',
-    'Henderson', 'Lincoln', 'Orlando', 'Jersey City', 'Chula Vista', 'Buffalo', 'Fort Wayne', 'Chandler', 'St. Petersburg', 'Laredo',
-    'Durham', 'Irvine', 'Madison', 'Norfolk', 'Lubbock', 'Gilbert', 'Winston-Salem', 'Glendale', 'Reno', 'Hialeah', 'Garland',
-    'Chesapeake', 'Irving', 'North Las Vegas', 'Scottsdale', 'Baton Rouge', 'Fremont', 'Richmond', 'Boise', 'San Bernardino'
+    'St. Louis', 'Stockton', 'Pittsburgh', 'Anchorage', 'Cincinnati', 'Saint Paul', 'Greensboro', 'Toledo', 'Newark',
+    'Henderson', 'Lincoln', 'Orlando', 'Jersey City', 'Chula Vista', 'Buffalo', 'Fort Wayne', 'St. Petersburg', 
+    'Durham', 'Irvine', 'Madison', 'Lubbock', 'Gilbert', 'Winston-Salem', 'Glendale', 'Hialeah', 
+     'Irving', 'North Las Vegas', 'Scottsdale', 'Baton Rouge', 'Richmond', 'Boise', 'San Bernardino'
 ]
 
 # Function to fetch air quality data from API

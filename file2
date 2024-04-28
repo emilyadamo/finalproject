@@ -3,6 +3,7 @@
 
 import requests
 import sqlite3
+import matplotlib.pyplot as plt
 
 # Predefined list of 100 popular cities in the United States
 cities_list = [
@@ -75,6 +76,46 @@ def print_weather_data():
         print("----------------------")
 
     conn.close()
+    
+    conn = sqlite3.connect('weather_data.db')
+    c = conn.cursor()
+
+    
+    c.execute("SELECT * FROM weather")
+    rows = c.fetchall()
+
+    
+    cities = []
+    temperatures = []
+    humidities = []
+    wind_speeds = []
+
+    for row in rows:
+        cities.append(row[0])
+        temperatures.append(row[1])
+        humidities.append(row[2])
+        wind_speeds.append(row[3])
+
+    conn.close()
+
+    num_cities = len(cities)
+    bar_width = 0.2
+    city_index = range(num_cities)
+
+    plt.figure(figsize=(12, 6))
+
+    plt.bar(city_index, temperatures, width=bar_width, label='Temperature', color='skyblue')
+    plt.bar([i + bar_width for i in city_index], humidities, width=bar_width, label='Humidity', color='lightgreen')
+    plt.bar([i + 2 * bar_width for i in city_index], wind_speeds, width=bar_width, label='Wind Speed', color='salmon')
+
+    plt.xlabel('City')
+    plt.ylabel('Values')
+    plt.title('Weather Data Visualization')
+    plt.xticks([i + bar_width for i in city_index], cities, rotation=90)
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
 
 def main():
     api_key = 'bfc9dd88f5347d803ecfdd0a93698186'
