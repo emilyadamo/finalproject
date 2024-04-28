@@ -111,15 +111,23 @@ def main():
         'Chesapeake', 'Irving', 'North Las Vegas', 'Scottsdale', 'Baton Rouge', 'Fremont', 'Richmond', 'Boise', 'San Bernardino'
     ]
 
-    # create_database_and_insert_data(cities_list)
-    # print_weather_data()
-
-    #create_database_and_insert_data(cities_list)
-    #print_weather_data()
-    print_and_visualize_weather_data()
+    total_items_inserted = 0  # Initialize the counter for total items inserted
+    while total_items_inserted < 100:
+        for city_index in range(len(cities_list)):
+            city_name = cities_list[city_index]
+            create_database_and_insert_data([city_name])
+            total_items_inserted += 1  # Increment the counter for total items inserted
+            if total_items_inserted >= 100:
+                print("100 items fetched. Exiting program.")
+                return
+            if total_items_inserted % 25 == 0:
+                print("25 items fetched. Waiting for next execution to fetch more.")
+                print_and_visualize_weather_data()
+                return
 
 if __name__ == "__main__":
     main()
+
 
 
 
