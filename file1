@@ -6,76 +6,82 @@
 import requests
 import sqlite3
 
+# Predefined list of US cities
+cities_list = [
+    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose',
+    'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco', 'Indianapolis', 'Seattle', 'Denver', 'Washington',
+    'Boston', 'El Paso', 'Nashville', 'Detroit', 'Oklahoma City', 'Portland', 'Las Vegas', 'Louisville', 'Baltimore',
+    'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento', 'Mesa', 'Kansas City', 'Atlanta', 'Long Beach', 'Colorado Springs',
+    'Raleigh', 'Miami', 'Omaha', 'Oakland', 'Minneapolis', 'Tulsa', 'Arlington', 'New Orleans', 'Wichita',
+    'Cleveland', 'Tampa', 'Bakersfield', 'Aurora', 'Anaheim', 'Honolulu', 'Santa Ana', 'Corpus Christi', 'Riverside', 'Lexington',
+    'St. Louis', 'Stockton', 'Pittsburgh', 'Anchorage', 'Cincinnati', 'Saint Paul', 'Greensboro', 'Toledo', 'Newark', 'Plano',
+    'Henderson', 'Lincoln', 'Orlando', 'Jersey City', 'Chula Vista', 'Buffalo', 'Fort Wayne', 'Chandler', 'St. Petersburg', 'Laredo',
+    'Durham', 'Irvine', 'Madison', 'Norfolk', 'Lubbock', 'Gilbert', 'Winston-Salem', 'Glendale', 'Reno', 'Hialeah', 'Garland',
+    'Chesapeake', 'Irving', 'North Las Vegas', 'Scottsdale', 'Baton Rouge', 'Fremont', 'Richmond', 'Boise', 'San Bernardino'
+]
+
+# Function to fetch air quality data from API
 def fetch_data_from_api(api_key, city_name):
     url = f"https://api.waqi.info/feed/{city_name}/?token={api_key}"
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
     else:
-        print("Failed to fetch data from API")
+        print(f"Failed to fetch data for {city_name} from API")
         return None
 
+# Function to create SQLite database and insert data
 def create_database_and_insert_data(api_key, city_name):
+    # Fetch air quality data from the API
     data = fetch_data_from_api(api_key, city_name)
-    if data:
-        conn = sqlite3.connect('air_quality.db')
-        c = conn.cursor()
-        c.execute("INSERT INTO air_quality_data (city, aqi, dominant_pollutant) VALUES (?, ?, ?)",
-                  (data['data']['city']['name'], data['data']['aqi'], data['data']['dominentpol']))
-        conn.commit()
-        print("Data inserted successfully.")
-        conn.close()
-    else:
-        print("Failed to fetch data from API")
-
-def query_database():
+    if not data or 'data' not in data:
+        print(f"No data available for {city_name}")
+        return
+    
+    # Connect to SQLite database
     conn = sqlite3.connect('air_quality.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM air_quality_data")
-    rows = c.fetchall()
-    for row in rows:
-        print(row)
-    conn.close()
 
-def clear_database():
-    conn = sqlite3.connect('air_quality.db')
-    c = conn.cursor()
-    c.execute("DROP TABLE IF EXISTS air_quality_data")
-    c.execute('''CREATE TABLE air_quality_data (
+    # Create table if it doesn't exist
+    c.execute('''CREATE TABLE IF NOT EXISTS air_quality_data (
                  id INTEGER PRIMARY KEY AUTOINCREMENT,
                  city TEXT,
                  aqi INTEGER,
                  dominant_pollutant TEXT
                  )''')
-    conn.commit()
+
+    # Check if the data fetched from API is different
+    c.execute("SELECT * FROM air_quality_data WHERE city=?", (city_name,))
+    last_row = c.fetchone()
+    if last_row and last_row[2] == data['data']['aqi'] and last_row[3] == data['data']['dominentpol']:
+        print(f"Data for {city_name} already exists in the database. Not inserting duplicates.")
+    else:
+        # Insert data into the table
+        c.execute('''INSERT INTO air_quality_data (city, aqi, dominant_pollutant) 
+                     VALUES (?, ?, ?)''', (city_name, data['data']['aqi'], data['data']['dominentpol']))
+        conn.commit()
+        print(f"Data for {city_name} inserted successfully.")
+
     conn.close()
 
+# Main function
 def main():
-    clear_database()
     api_key = '4d10eff89e4c42d51e89711f979e6371524a5a3b'
-    cities_list = [
-        'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose',
-        'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco', 'Indianapolis', 'Seattle', 'Denver', 'Washington',
-        'Boston', 'El Paso', 'Nashville', 'Detroit', 'Oklahoma City', 'Portland', 'Las Vegas', 'Memphis', 'Louisville', 'Baltimore',
-        'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento', 'Mesa', 'Kansas City', 'Atlanta', 'Long Beach', 'Colorado Springs',
-        'Raleigh', 'Miami', 'Virginia Beach', 'Omaha', 'Oakland', 'Minneapolis', 'Tulsa', 'Arlington', 'New Orleans', 'Wichita',
-        'Cleveland', 'Tampa', 'Bakersfield', 'Aurora', 'Anaheim', 'Honolulu', 'Santa Ana', 'Corpus Christi', 'Riverside', 'Lexington',
-        'St. Louis', 'Stockton', 'Pittsburgh', 'Anchorage', 'Cincinnati', 'Saint Paul', 'Greensboro', 'Toledo', 'Newark', 'Plano',
-        'Henderson', 'Lincoln', 'Orlando', 'Jersey City', 'Chula Vista', 'Buffalo', 'Fort Wayne', 'Chandler', 'St. Petersburg', 'Laredo',
-        'Durham', 'Irvine', 'Madison', 'Norfolk', 'Lubbock', 'Gilbert', 'Winston-Salem', 'Glendale', 'Reno', 'Hialeah', 'Garland',
-        'Chesapeake', 'Irving', 'North Las Vegas', 'Scottsdale', 'Baton Rouge', 'Fremont', 'Richmond', 'Boise', 'San Bernardino'
-    ]
-    max_lines = 20
-    lines_fetched = 0
+    max_lines = len(cities_list)  # Number of cities in the list
+    lines_fetched = 0  # Initialize the counter for lines fetched
     for city_name in cities_list:
+        create_database_and_insert_data(api_key, city_name)
+        lines_fetched += 1  # Increment the counter for lines fetched
         if lines_fetched >= max_lines:
             break
-        create_database_and_insert_data(api_key, city_name)
-        lines_fetched += 1
-    query_database()
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
 
 
 
