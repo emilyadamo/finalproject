@@ -1,0 +1,5 @@
+# Emily Adamo, Rose Saperston, and Andrea Gonzalvo
+#Calculations
+import requests
+import sqlite3
+import matplotlib.pyplot as plt

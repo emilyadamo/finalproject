@@ -122,6 +122,7 @@ def main():
                 return
             if total_items_inserted % 25 == 0:
                 print("25 items fetched. Waiting for next execution to fetch more.")
+                print_weather_data()
                 print_and_visualize_weather_data()
                 return
 
