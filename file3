@@ -27,11 +27,8 @@ def create_database_and_insert_data(cities):
     conn = sqlite3.connect('weather_data.db')
     c = conn.cursor()
 
-    # Drop the existing table if it exists
-    c.execute('''DROP TABLE IF EXISTS weather_data''')
-
-    # Create table with the correct schema
-    c.execute('''CREATE TABLE weather_data (
+    # Create table if it doesn't exist
+    c.execute('''CREATE TABLE IF NOT EXISTS weather_data (
                  city TEXT,
                  temperature INTEGER,
                  feels_like INTEGER,
@@ -84,6 +81,10 @@ def print_and_visualize_weather_data():
 
     conn.close()
 
+    print("Cities:", cities)
+    print("Temperatures:", temperatures)
+
+    # Plotting
     plt.figure(figsize=(12, 11))
     plt.barh(cities, temperatures, color='skyblue')
     plt.xlabel('Temperature (°C)')
@@ -95,7 +96,6 @@ def print_and_visualize_weather_data():
     plt.yticks(fontsize=4)
     plt.tight_layout()
     plt.show()
-
 
 def main():
     cities_list = [
