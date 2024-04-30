@@ -87,6 +87,17 @@ def plot_air_quality(cities, aqi_values):
     plt.tight_layout()
     plt.show()
 
+# Function to plot a line chart
+def plot_line_chart(cities, aqi_values):
+    plt.figure(figsize=(10, 6))
+    plt.plot(cities[:len(aqi_values)], aqi_values, marker='o', color='green', linestyle='-')
+    plt.xlabel('City')
+    plt.ylabel('Air Quality Index (AQI)')
+    plt.title('Air Quality Index (AQI) Across Cities')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
+
 # Main function
 def main():
     api_key = '4d10eff89e4c42d51e89711f979e6371524a5a3b'
@@ -111,6 +122,7 @@ def main():
 
     # Plot air quality data
     plot_air_quality(cities, aqi_values)
+    plot_line_chart(cities, aqi_values)
 
 
         
