@@ -97,6 +97,31 @@ def print_and_visualize_weather_data():
     plt.tight_layout()
     plt.show()
 
+def visualize_scatter_plot():
+    conn = sqlite3.connect('weather_data.db')
+    c = conn.cursor()
+
+    c.execute("SELECT temperature, humidity FROM weather_data")
+    rows = c.fetchall()
+
+    temperatures = []
+    humidities = []
+
+    for row in rows:
+        temperatures.append(row[0])
+        humidities.append(row[1])
+
+    conn.close()
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    plt.scatter(temperatures, humidities, color='red', alpha=0.5)
+    plt.title('Temperature vs Humidity')
+    plt.xlabel('Temperature (°C)')
+    plt.ylabel('Humidity (%)')
+    plt.grid(True)
+    plt.show()
+
 def main():
     cities_list = [
         'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose',
@@ -124,6 +149,7 @@ def main():
                 print("25 items fetched. Waiting for next execution to fetch more.")
                 print_weather_data()
                 print_and_visualize_weather_data()
+                visualize_scatter_plot()
                 return
 
 if __name__ == "__main__":

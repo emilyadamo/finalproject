@@ -96,7 +96,12 @@ def plot_line_chart(cities, aqi_values):
     plt.title('Air Quality Index (AQI) Across Cities')
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
+    
+    # Set y-axis to be in ascending order
+    plt.gca().invert_yaxis()
+    
     plt.show()
+
 
 # Main function
 def main():
