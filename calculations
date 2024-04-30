@@ -1,0 +1,60 @@
+import sqlite3
+
+# Function to perform calculations and database join
+def process_data():
+    conn = sqlite3.connect('weather_data.db')
+    c = conn.cursor()
+
+    # Perform calculations from air_quality_data table
+    c.execute("SELECT city, AVG(aqi) FROM air_quality_data GROUP BY city")
+    average_aqi_data = c.fetchall()
+    
+    # Perform calculations from weather_data table
+    c.execute("SELECT city, AVG(feels_like) FROM weather_data GROUP BY city")
+    average_feelslike_data = c.fetchall()
+    
+
+    # Perform calculations from weather table
+    conn = sqlite3.connect('weather_data.db')
+    c.execute("SELECT city, AVG(wind_speed) FROM weather GROUP BY city")
+    average_weather_data = c.fetchall()
+    
+
+    # Perform database join and additional calculations
+    c.execute('''SELECT a.city, a.avg_aqi, b.avg_wind_speed 
+                 FROM (SELECT city, AVG(aqi) AS avg_aqi FROM air_quality_data GROUP BY city) AS a
+                 JOIN (SELECT city, AVG(wind_speed) AS avg_wind_speed 
+                       FROM weather GROUP BY city) AS b
+                 ON a.city = b.city''')
+    joined_data = c.fetchall()
+
+    conn.close()
+    return average_aqi_data, average_weather_data, average_feelslike_data, joined_data
+
+
+# Function to write calculated data to a text file
+def write_to_text_file(data, filename):
+    with open(filename, 'w') as file:
+        for row in data:
+            if len(row) >= 4:  # Ensure the tuple has at least 4 elements
+                file.write(f"{row[0]}: {row[1]}, {row[2]}, {row[3]}\n")
+            else:
+                file.write(f"{row[0:2]}\n")  # Write the entire tuple if it doesn't have enough elements
+
+
+# Main function
+def main():
+    # Process the data
+    average_aqi_data, average_weather_data, joined_data, average_feelslike_data = process_data()
+
+    # Write calculated data to text files
+    write_to_text_file(average_aqi_data, 'average_aqi_data.txt')
+    write_to_text_file(average_weather_data, 'average_windspeed_data.txt')
+    write_to_text_file(joined_data, 'joined_data.txt')
+    write_to_text_file(average_feelslike_data, 'average_feelslike_data.txt')
+
+    print("Data processed and written to text files.")
+
+if __name__ == "__main__":
+    main()
+
