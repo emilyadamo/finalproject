@@ -5,6 +5,7 @@
 
 import requests
 import sqlite3
+import matplotlib.pyplot as plt
 
 # Predefined list of US cities
 cities_list = [
@@ -63,23 +64,52 @@ def create_database_and_insert_data(api_key, city_name):
         print(f"Data for {city_name} inserted successfully.")
 
     conn.close()
+# Function to plot the bar chart
+def plot_air_quality(cities, aqi_values):
+    # Convert AQI values to integers, skipping non-numeric values
+    aqi_values_int = []
+    for value in aqi_values:
+        try:
+            aqi_values_int.append(int(value))
+        except ValueError:
+            continue
+    
+    plt.figure(figsize=(10, 6))
+    plt.bar(cities[:len(aqi_values_int)], aqi_values_int, color='skyblue')
+    plt.xlabel('City')
+    plt.ylabel('Air Quality Index (AQI)')
+    plt.title('Air Quality Index (AQI) Across Cities')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
 
 # Main function
 def main():
     api_key = '4d10eff89e4c42d51e89711f979e6371524a5a3b'
     total_items_inserted = 0  # Initialize the counter for total items inserted
-    while total_items_inserted < 100:
-        for city_index in range(len(cities_list)):
-            city_name = cities_list[city_index]
-            create_database_and_insert_data(api_key, city_name)
-            total_items_inserted += 1  # Increment the counter for total items inserted
-            if total_items_inserted >= 100:
-                print("100 items fetched. Exiting program.")
-                return
-            if total_items_inserted % 25 == 0:
-                print("25 items fetched. Waiting for next execution to fetch more.")
-                return
+    cities = []  # List to store city names
+    aqi_values = []  # List to store AQI values
 
+    # Collect data for 25 cities
+    for city_index in range(25):
+        city_name = cities_list[city_index]
+        create_database_and_insert_data(api_key, city_name)
+        # Fetch air quality data from the database
+        conn = sqlite3.connect('air_quality.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM air_quality_data WHERE city=?", (city_name,))
+        data = c.fetchone()
+        conn.close()
+        if data:
+            cities.append(city_name)
+            aqi_values.append(data[2])  # Index 2 corresponds to the AQI value
+            total_items_inserted += 1  # Increment the counter for total items inserted
+
+    # Plot air quality data
+    plot_air_quality(cities, aqi_values)
+
+
+        
 if __name__ == "__main__":
     main()
 
